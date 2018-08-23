@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+    <title>测试：页面</title>
+
+    <!-- MZUI CSS file -->
+    <link href="https://cdn.bootcss.com/weui/1.1.2/style/weui.min.css" rel="stylesheet">
+    <style>
+    img.headbox {
+      width:100px;
+      height:100px;
+      border-radius:100px;
+    }
+    </style>
+    <script src="https://cdn.bootcss.com/zepto/1.2.0/zepto.js"></script>
+    <script src="http://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+  </head>
+<body style="margin:1em;">
+
+  <div class="weui-flex">
+    <div class="weui-flex__item">
+      <img class="headbox" id="yourhead" />
+    </div>
+    <div class="weui-flex__item">
+      <ul>
+        <li>aaa</li>
+        <li>bbb</li>
+        <li>ccc</li>
+      </ul>
+    </div>
+  </div>
+  <div>
+    <div class="weui-media-box weui-media-box_text">
+      <h4 class="weui-media-box__title">标题一</h4>
+      <p class="weui-media-box__desc">由各种物质组成的巨型球状天体，叫做星球。星球有一定的形状，有自己的运行轨道。</p>
+    </div>
+    <div class="weui-media-box weui-media-box_text">
+      <h4 class="weui-media-box__title">标题二</h4>
+      <p class="weui-media-box__desc">由各种物质组成的巨型球状天体，叫做星球。星球有一定的形状，有自己的运行轨道。</p>
+    </div>
+  </div>
+
+</body>
+  <script type="text/javascript">
+{{Ssegment: wxconfig}}
+
+  function _load_face(){
+    var header = document.getElementById('yourhead');
+    $.get('/gzhusers?target=head_img', function(resp){
+      if (resp){
+        header.src = resp;
+      }
+    });
+  }
+
+  Zepto(function($){
+    //all readys
+    // var sct = document.createElement("script");
+    // sct.type = 'text/javascript';
+    // sct.src = '/' + window.location.pathname.substring(1).replace('/', '_') || '';
+    // document.body.appendChild(sct);
+    // window._sysfuncs._set_navbar();
+    _load_face();
+    document.getElementById('yourname').innerText = utl_cookie('nickname');
+    alert('wellcome!');
+  });
+// {{Ssegment: sysenv}}
+  // page_lib functions
+  function utl_cookie(vname, value, expires){
+    if(typeof(vname) !== 'string'){
+      return null;
+    }
+    if(value === undefined){
+      //get value from cookie
+      var cukyRE = new RegExp(vname + '=(\\w+);*?');
+      try{
+        return cukyRE.exec(document.cookie)[1];
+      }catch(e){
+        return null;
+      }
+    }
+    var exdate = new Date();
+    if(value === null){
+      exdate.setTime(exdate.getTime() - 1);
+    }else{
+      exdate.setDate(exdate.getDate() + ((expires && expires>0)?expires:1));
+    }
+    document.cookie = escape(vname) + '=' + escape(value) + ';expires=' + exdate.toGMTString();
+    return vname;
+  }
+  </script>
+</html>

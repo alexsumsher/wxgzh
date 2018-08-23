@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+    <title>测试：申请页面</title>
+
+    <!-- MZUI CSS file -->
+    <link href="https://cdn.bootcss.com/weui/1.1.2/style/weui.min.css" rel="stylesheet">
+    <style>
+    img.headbox {
+      width:100px;
+      height:100px;
+      border-radius:100px;
+    }
+    </style>
+    <script src="https://cdn.bootcss.com/zepto/1.2.0/zepto.js"></script>
+    <!-- <script src="gzhome/js/zeptocookie.js"></script> -->
+    <script src="http://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+  </head>
+<body style="margin:1em;">
+
+  <div class="weui-gallery" id="gallery" style="opacity: 0; display: none;">
+    <span class="weui-gallery__img" id="galleryImg" style="background-image:url(blob:https://weui.io/38ad9ad0-d22b-44e9-baaa-ad35b16e354e)"></span>
+    <div class="weui-gallery__opr">
+      <a href="javascript:" class="weui-gallery__del">
+        <i class="weui-icon-delete weui-icon_gallery-delete"></i>
+      </a>
+    </div>
+  </div>
+
+  <div class="weui-flex">
+    <div class="weui-flex__item">
+      <img class="headbox" id="yourhead" />
+    </div>
+    <div class="weui-flex__item">
+      <span id="yourname">你好</span>
+    </div>
+  </div>
+  <div>
+    <article class="weui-article">
+      <h1>提示</h1>
+      <section>
+        提交申请将包含您当前的位置信息，有利于通过。
+      </section>
+    </article>
+    <form id="form_qr_apply" action="/gzhusers?target=apply_for_qr">
+    <div class="weui-cells weui-cells_form">
+      <div class="weui-cell">
+        <div class="weui-cell__hd"><label class="weui-label">手机号</label></div>
+        <div class="weui-cell__bd">
+          <input class="weui-input" type="tel" name="mobile" id="mobile" placeholder="请输入手机号">
+        </div>
+      </div>
+      <div class="weui-cell">
+        <div class="weui-cell__hd"><label class="weui-label">姓名</label></div>
+        <div class="weui-cell__bd">
+          <input class="weui-input" type="text" name="realname" id="realname" placeholder="请输真实姓名">
+        </div>
+      </div>
+      <div class="weui-uploader__bd">
+        <div class="weui-uploader__input-box">
+          <input id="uploaderInput" class="weui-uploader__input" type="file" accept="image/*" multiple="">
+        </div>
+      </div>
+        <div class="weui-btn-area">
+        <a href="javascript:void(0);" id="oploc" class="weui-btn weui-btn_plain-default">位置</a>
+        <a href="javascript:void(0);" id="putloc" class="weui-btn weui-btn_plain-default">位置</a>
+        <br>
+        <a href="javascript:void(0);" id="puimg" class="weui-btn weui-btn_plain-default">提交图片</a>
+      </div>
+    </div>
+    </form>
+    <br>
+    <div class="weui-btn-area">
+        <a href="javascript:void(0);" id="smbt" class="weui-btn weui-btn_primary" onclick="gosub()">提 交</a>
+    </div>
+  </div>
+
+  <div id="toast" style="display: none;">
+      <div class="weui-mask_transparent"></div>
+      <div class="weui-toast">
+          <i class="weui-icon-success-no-circle weui-icon_toast"></i>
+          <p class="weui-toast__content">提交成功，谢谢！</p>
+      </div>
+  </div>
+
+</body>
+<script type="text/javascript">
+{{Ssegment: wxconfig}}
+
+  function _load_face(){
+    $.getJSON('/gzhusers?subpage=datas&target=baseinfo', function(resp){
+      if (resp && resp.respon==='success'){
+        var header = document.getElementById('yourhead');
+        header.src = resp.headimgurl;
+        document.getElementById('yourname').innerText = resp.nickname;
+      }
+    });
+  }
+  $("#putloc").on("click", function(){
+    var bt = document.getElementById('putloc');
+      if (bt.classList.contains('weui-btn_plain-disabled')){
+        return;
+      }
+    wx.getLocation({
+      success: function (res) {
+        alert(获取成功);
+        _pos_data = res;
+        bt.classList.add('weui-btn_plain-disabled');
+      },
+      cancel: function (res) {
+        alert('请允许.');
+      }
+    });
+  });
+  $("#oploc").on("click", function(){
+    wx.openLocation({
+      latitude: 23.099994,
+      longitude: 113.324520,
+      name: 'hello',
+      address: 'here we are!',
+      scale: 14,
+      infoUrl: ''
+    });
+  });
+  $("#puimg").on("click", function(){
+    wx.chooseImage({
+    count: 1, // 默认9
+    sizeType: ['original', 'compressed'], // 可以指定是原图还是压缩图，默认二者都有
+    sourceType: ['album', 'camera'], // 可以指定来源是相册还是相机，默认二者都有
+    success: function (res) {
+      var localIds = res.localIds; // 返回选定照片的本地ID列表，localId可以作为img标签的src属性显示图片
+      var _pdata = {title:'userupimg', mediaid: res.serverId};
+      $.post('/gzhusers?target=testing', _pdata, function(resp){
+        alert(JSON.stringify(resp));
+      });
+    }
+    });
+  })
+
+function utl_cookie(vname, value, expires){
+  if(typeof(vname) !== 'string'){
+    return null;
+  }
+  if(value === undefined){
+    //get value from cookie
+    var cukyRE = new RegExp(vname + '=(\\w+);*?');
+    try{
+      return cukyRE.exec(document.cookie)[1];
+    }catch(e){
+      return null;
+    }
+  }
+  var exdate = new Date();
+  if(value === null){
+    exdate.setTime(exdate.getTime() - 1);
+  }else{
+    exdate.setDate(exdate.getDate() + ((expires && expires>0)?expires:1));
+  }
+  document.cookie = escape(vname) + '=' + escape(value) + ';expires=' + exdate.toGMTString();
+  return vname;
+}
+// {{Ssegment: sysenv}}
+    function get_form_name(formid, act){
+      var fm = document.getElementById(formid);
+      if (act==='hide'){
+        fm.style="display:none"
+        return;
+      }
+      controls = fm.querySelectorAll('input[name]');
+      var rta = {};
+      var to,tt;
+      for(var i=0,len=controls.length;i<len;i++){
+        to = controls[i];
+        if(act === 'lock'){
+          to.readOnly = true;
+          continue;
+        }
+        tt = to.type;
+        if(tt === "radio" || tt === 'checkbox'){
+          if(to.checked === true){
+            rta[to.name] = to.value;
+          }
+        }else{
+          rta[to.name] = to.value;
+        }
+      }
+      return rta;
+    }
+
+    function pu_msg(){
+      var msg=document.getElementById('toast');
+      msg.style="display:inital";
+      setTimeout('document.getElementById("toast").style="display:none;"',1500);
+    }
+
+    function gosub(){
+      var bt = document.getElementById('smbt');
+      if (bt.classList.contains('weui-btn_plain-disabled')){
+          alert('已经提交！');
+          return;
+        }
+      rta = get_form_name('form_qr_apply');
+      if(!rta){
+        return;
+      }
+      //get location
+      wx.getLocation({
+        success: function (res) {
+          rta['Location'] = res;
+        },
+        cancel: function (res) {
+          alert('获取位置有利于申请！');
+        }
+      });
+      var ci;
+      var check_pos = function(){
+        console.log(JSON.stringify(rta));
+        if(rta['Location']){
+          clearInterval(ci);
+          $.post('/gzhusers?target=testing', rta, function(response){ 
+            alert(JSON.stringify(response));
+            if(response.respon === 'success'){
+              get_form_name('form_qr_apply', 'hide');
+              pu_msg();
+              bt.classList.add('weui-btn_plain-disabled');
+              bt.text="已提交成功！稍后我们将联系您……";
+            }else{
+              alert("未能够提交，抱歉！请直接电联我公司：189.....");
+            };
+          },'json');
+        }
+      }
+      ci=setInterval(check_pos, 1000);
+    }
+
+    Zepto(function($){
+      //all readys
+      // var sct = document.createElement("script");
+      // sct.type = 'text/javascript';
+      // sct.src = '/' + window.location.pathname.substring(1).replace('/', '_') || '';
+      // document.body.appendChild(sct);
+      // window._sysfuncs._set_navbar();
+      _load_face();
+  });
+
+    wx.error(function(res){
+      alert(JSON.stringify(res));
+    })
+</script>
+</html>
