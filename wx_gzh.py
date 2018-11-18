@@ -309,6 +309,7 @@ class extserver(object):
 
 
 class gzh(extserver):
+    def_applist = ['checkJsApi', 'onMenuShareTimeline', 'onMenuShareAppMessage', 'chooseImage','uploadImage', 'openLocation', 'getLocation','scanQRCode']
     token = {
         #   tokenid: appid; tokense: secret
         'tokenid': '',
@@ -407,7 +408,7 @@ class gzh(extserver):
             signer.pop('jsapi_ticket')
             signer.pop('url')
             signer['nonceStr'] = signer.pop('noncestr')
-            signer['jsApiList'] = applist or ['checkJsApi', 'onMenuShareTimeline', 'onMenuShareAppMessage', 'chooseImage','uploadImage', 'openLocation', 'getLocation','scanQRCode']
+            signer['jsApiList'] = applist or self.def_applist
             signer['appId'] = cls.token['tokenid']
             #   MARK: if set debug here should: signer['debug'] = True
             wxcstr = 'wx.config({})'.format(json.dumps(signer))

@@ -36,52 +36,8 @@ class wx_msg(wx_basedata):
         if ('FromUserName' not in data) or (not data['FromUserName']):
             data['FromUserName'] = msg_common['FromUserName']
         data['CreateTime'] = int(time.time())
-        package = self.__class__.package if hasattr(self, 'package') else None
-        return self.outxml(data, self.__class__.sender_keys, package=package)
+        return self.outxml(data, self.__class__.sender_keys)
 
-    @staticmethod
-    def outxml_old(datas, keys, u=True, store=False, package=None):
-        #   cdatas: data with CDATA frame; datas:normal data, u->unicode(no need to encode to utf8)
-        #   package: (pack_name, (inner_item_name1, inner_item_name2)), inner_item_name should be in keys and the same arrange
-        #   eg: outxml({'a':1,'b':'xyz','c':'ccc','d':'ddd','e':'eee'},('a','b','!c','!d','!e'),package=('v',('!c','!d'))) =>
-        #   u'<xml><a>1</a><b>xyz</b><v><c><![CDATA[ccc]]></c><d><![CDATA[ddd]]></d></v><e><![CDATA[eee]]></e></xml>'
-        def mki(tag):
-            ist = 0
-            if tag.startswith('!'):
-                tag = tag[1:]
-                ist = 1
-            v = datas[tag]
-            # v = v if isinstance(v, unicode) else str(v).decode('utf8') # guess content from wx is utf8, need to decode to unicode to handle
-            v = v if isinstance(v, unicode) else str(v)
-            return u'<{tag}><![CDATA[{val}]]></{tag}>'.format(tag=tag, val=v) if ist else u'<{tag}>{val}</{tag}>'.format(tag=tag, val=v)
-
-        conts = u''
-        if package:
-            packname,pkeys = package
-            keys = list(keys)
-            pid = keys.index(pkeys[0])
-            pstr = u'<{0}>%s</{0}>'.format(packname)
-            pconts = u''
-            for k in pkeys:
-                pconts += mki(k)
-                keys.remove(k)
-            pstr = pstr % pconts
-        else:
-            pid = len(keys) + 1
-            pstr = u''
-        i = 0
-        for k in keys:
-            if i == pid:
-                conts += pstr
-            conts += mki(k)
-            i += 1
-        #   when package the last one!
-        if pid == i:
-            conts += pstr
-        rtstr =  '<xml>%s</xml>' % conts
-        if store:
-            self.xmlstr = rtstr
-        return rtstr
 
     @staticmethod
     def outxml(datas, keys, u=True, store=False):
@@ -139,8 +95,7 @@ class wx_msg_text(wx_msg):
 
 class wx_msg_picture(wx_msg):
     require_keys = ('!ToUserName', '!FromUserName', 'CreateTime', '!MsgType', '!PicUrl', '!MediaId', 'MsgId')
-    sender_keys = ('!ToUserName', '!FromUserName', 'CreateTime', '!MsgType', '!MediaId')
-    package = ('Image', ('!MediaId',))
+    sender_keys = ('!ToUserName', '!FromUserName', 'CreateTime', '!MsgType', '<Image', '!MediaId', '<Image')
 
     def make_msg(self, **kwargs):
         print kwargs
