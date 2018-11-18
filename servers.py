@@ -43,7 +43,7 @@ wx_events.reg_func('wx_event_CLICK', 'show_my_follower', click_my_cus)
 wx_events.reg_func('wx_event_subscribe', 'finally', when_subscribe)
 
 
-# 后续增加智能对话接口，基于wx_msg_text
+# 后续增加智能对话接口，基于wx_msg_text，或者转发到客服系统，实现分发器
 # part of wx_msg_text replier
 wx_replier = None
 

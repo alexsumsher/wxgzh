@@ -4,11 +4,10 @@
 import time
 from wx_consts import msg_common
 from wx_xmler import wx_basedata
-
-#   ////////////////////////////////       PART OF MASSAGE         //////////////////////////////////   
-#   ////////////////////////////////       PART OF MASSAGE         //////////////////////////////////   
+ 
 class wx_msg(wx_basedata):
     sender_keys = None
+    def_reply = u'收到'
 
     def __init__(self, xmlstr='', ischeck=False, fromoid=''):
         if ischeck:
@@ -41,7 +40,7 @@ class wx_msg(wx_basedata):
         return self.outxml(data, self.__class__.sender_keys, package=package)
 
     @staticmethod
-    def outxml(datas, keys, u=True, store=False, package=None):
+    def outxml_old(datas, keys, u=True, store=False, package=None):
         #   cdatas: data with CDATA frame; datas:normal data, u->unicode(no need to encode to utf8)
         #   package: (pack_name, (inner_item_name1, inner_item_name2)), inner_item_name should be in keys and the same arrange
         #   eg: outxml({'a':1,'b':'xyz','c':'ccc','d':'ddd','e':'eee'},('a','b','!c','!d','!e'),package=('v',('!c','!d'))) =>
@@ -84,8 +83,34 @@ class wx_msg(wx_basedata):
             self.xmlstr = rtstr
         return rtstr
 
+    @staticmethod
+    def outxml(datas, keys, u=True, store=False):
+        # outxml({'a':1,'b':'xyz','c':'ccc','d':'ddd','e':'eee'},('a','b', '<v', '!c','!d', '<v', '!e')) =>
+        #   u'<xml><a>1</a><b>xyz</b><v><c><![CDATA[ccc]]></c><d><![CDATA[ddd]]></d></v><e><![CDATA[eee]]></e></xml>'
+        packs = []
+        xmlstr = u'<xml>%s</xml>' if u else '<xml>%s</xml>'
+        inxml = ''
+        for k in keys:
+            if k[0] == '<':
+                kn = k[1:]
+                try:
+                    packs.remove(kn)
+                    inxml += '</%s>' % kn
+                except ValueError:
+                    packs.append(kn)
+                    inxml += '<%s>' % kn
+            elif k[0] == '!':
+                kn = k[1:]
+                inxml += '<%s><![CDATA[%s]]></%s>' % (kn, datas[kn], kn)
+            else:
+                inxml += '<{0}>{1}</{0}>'.format(k, datas[k])
+        xmlstr = xmlstr % inxml
+        if store:
+            self.xmlstr = rtstr
+        return xmlstr
+
     def replay(self):
-        return u'收到'
+        return self.def_reply
 
 
 class wx_msg_text(wx_msg):

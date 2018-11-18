@@ -2,7 +2,7 @@
 # -*- coding: utf8
 from flask import session
 from wx_gzh import wx_smsg
-# a simple user holder at runtime, work with session
+# a simple user holder at runtime, work with session and cache
 
 class rtuser(object):
     count = 0
@@ -18,11 +18,15 @@ class rtuser(object):
             print jrt['errmsg']
             return None
         openid = jrt['openid']
-        return rtuser(openid, authed='yes')
+        return rtuser(openid, authed='yes', udata=jrt)
 
-    def __init__(self, openid='', authed='no'):
+    def __init__(self, openid='', authed='no', udata=None):
         session['openid'] = openid
         session['authed'] = authed
+        self.D = udata
+
+    def __getitem__(self, iname):
+        return self.D[iname]
 
     def subscribe(self):
         session['subed'] = 'yes'

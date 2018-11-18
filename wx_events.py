@@ -35,8 +35,8 @@ def unreg_func(ename, key):
         return 1
     else:
         return 0
-#   ////////////////////////////////       PART OF EVENTS         //////////////////////////////////    
-#   ////////////////////////////////       PART OF EVENTS         //////////////////////////////////    
+
+  
 class wx_event(wx_basedata):
     #   event will not export xml, must take a xmlstr
 
